@@ -1,0 +1,11 @@
+dist: bionic
+language: node_js
+node_js:
+ - "node"
+
+services:
+  - docker
+
+script:
+  - npm run test
+  - npm run coverage
