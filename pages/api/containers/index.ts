@@ -2,9 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { send } from 'micro';
 
 import Apps from '@dashboard/apps';
-import docker from '@dashboard/docker';
-
-process.env.domain = 'getholo.app';
+import { listApps } from '@dashboard/utils';
 
 function isApp(query: string): query is keyof typeof Apps {
   return query in Apps;
@@ -14,12 +12,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { method } = req;
 
   if (method === 'GET') {
-    const containers = await docker.containers.list({
-      filters: {
-        label: 'holo.app',
-      },
-    });
-    return send(res, 200, containers);
+    const apps = await listApps();
+    const instances = await Promise.all(
+      apps.map(app => app.inspect()),
+    );
+    return send(res, 200, instances);
   }
 
   // Create the damn container
@@ -44,7 +41,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    return send(res, 200);
+    const inspection = await app.inspect();
+    if (!inspection) {
+      return send(res, 400);
+    }
+
+    return send(res, 200, inspection);
   }
 
   return send(res, 404);
