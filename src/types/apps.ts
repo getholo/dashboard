@@ -7,7 +7,7 @@ import {
   toEnv, toLabels, toPorts, inspectApp,
 } from '@dashboard/utils';
 
-import { userInfo, homedir, platform } from 'os';
+import { userInfo, homedir } from 'os';
 import { join } from 'upath';
 import { remove } from 'fs-extra';
 
@@ -128,10 +128,8 @@ export default class App<
   public variables = new VariablesBackend(this.id, this.config.variables)
 
   private appdataToPath() {
-    if (platform() === 'linux') {
-      return `/opt/appdata/getholo/dashboard/containers/${this.id}`;
-    }
-    return join(homedir(), 'getholo', 'dashboard', 'containers', this.id);
+    // removed linux platform as /opt/appdata requires extra permissions
+    return join(homedir(), '.getholo', 'dashboard', 'containers', this.id);
   }
 
   public paths: Path<Dest>[] = this.config.paths.map(
@@ -157,7 +155,11 @@ export default class App<
   async remove(force?: boolean, deleteAppdata?: boolean) {
     await docker.containers.remove(this.id, force);
     if (deleteAppdata) {
-      await remove(this.appdataToPath());
+      try {
+        await remove(this.appdataToPath());
+      } catch {
+        // might crash on Travis
+      }
     }
   }
 

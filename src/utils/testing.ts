@@ -4,7 +4,7 @@ import { join } from 'upath';
 import fs from 'fs-extra';
 import { homedir } from 'os';
 
-const testruns = join(homedir(), 'getholo', 'dashboard', 'testing');
+const testruns = join(homedir(), '.getholo', 'dashboard', 'testing');
 
 export async function prepare() {
   const path = join(testruns, `${nanoid(24)}.db`);
@@ -14,5 +14,9 @@ export async function prepare() {
 }
 
 export async function cleanup(path: string) {
-  await fs.remove(path);
+  try {
+    await fs.remove(path);
+  } catch {
+    // Apparently this can crash Travis, probably a permission based issue
+  }
 }
