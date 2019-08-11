@@ -32,9 +32,69 @@ npm install
 # Build the server
 npm run build
 
-# Star the server
+# Start the server
 npm run start
 ```
+
+## API Usage
+The dashboard currently offers a feature-limited API.
+
+### Currently supported apps
+The following apps will start without any issues:
+- Deluge
+- NZBGet
+- Plex (not configured OOB)
+- Radarr
+- Rutorrent
+- Sabnzbd
+- Sonarr
+- Traefik (not configured OOB)
+- Transmission
+
+Please note that **none** of these apps currently run as one would expect. The WebUIs will start but the paths aren't mapped to the main system yet. I advise you to **avoid** running Plex and Traefik at all, as they're still missing their configurations.
+
+### Containers
+The API currently allows you to perform basic CRUD operations on containers.
+
+All requests respond with at least the following details:
+```json
+{
+  "name": "radarr",
+  "image": "linuxserver/radarr:latest",
+  "internalPort": 7878,
+  "port": 7878,
+  "url": "http://localhost:7878",
+  "env": [
+    "GUID=501",
+    "PUID=20"
+  ],
+  "labels": {
+    "holo.app": "radarr",
+    "traefik.enabled": "true",
+    "traefik.frontend.rule": "Host:radarr.domain.tld",
+    "traefik.port": "7878"
+  },
+}
+```
+
+#### GET /api/containers
+Get a list of running containers.
+
+#### POST /api/containers?app=name
+_Replace `name` with one of Holo's supported app names._
+
+Creates a container for one of Holo's supported apps.
+
+#### GET /api/containers/name
+_Replace `name` with the actual app name_
+
+Get information on a currently running container.
+
+#### DELETE /api/containers/name
+_Replace `name` with the actual app name_
+
+Forcefully removes the container.
+
 
 ## You may also like...
 * [Cloudbox](https://github.com/Cloudbox/Cloudbox)
