@@ -1,0 +1,46 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "airbnb"
+  ],
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "rules": {
+    "import/prefer-default-export": "off",
+    "no-unused-vars": "off",
+    "no-await-in-loop": "off",
+    "lines-between-class-members": "off",
+    "@typescript-eslint/no-unused-vars": "error",
+    "no-useless-constructor": "off",
+    "@typescript-eslint/no-useless-constructor": "error",
+    "import/no-extraneous-dependencies": "off",
+    "camelcase": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-filename-extension": [1, { "extensions": [".tsx", ".jsx"] }],
+    "react/prop-types": "off",
+    "react/jsx-one-expression-per-line": "off",
+    "react/jsx-closing-tag-location": "off"
+  },
+  "settings": {
+    "import/resolver": {
+      "typescript": {},
+      "node": {
+        "extensions": [
+          ".js",
+          ".jsx",
+          ".ts",
+          ".tsx",
+          ".json"
+        ]
+      }
+    }
+  },
+  "env": {
+    "jest": true
+  }
+}

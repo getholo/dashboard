@@ -1,0 +1,16 @@
+generator photon {
+  provider = "photonjs"
+}
+
+datasource sqlite {
+  provider = "sqlite"
+  url      = env("SQLITE_URL")
+}
+
+model Variable {
+  id    Int    @id
+  index String @unique
+  name  String
+  value String
+  app   String
+}
