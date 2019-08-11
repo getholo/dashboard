@@ -1,6 +1,7 @@
 import { listApps } from '@dashboard/utils';
 import { waitUntilReachable } from '@dashboard/utils/isReachable';
 
+import retry from 'async-retry';
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { Deluge, Nzbget, Transmission } from './downloadClients';
 
@@ -24,52 +25,62 @@ export default class Nzbdrone {
   }
 
   async add(client: Client) {
-    return this.fetch.request({
-      method: 'POST',
-      url: '/api/downloadclient',
-      data: {
-        ...client,
-        priority: undefined,
-        fields: client.fields.map(
-          ({ name, value }) => {
-            if (this.app !== 'radarr') {
-              return {
-                name,
-                value,
-              };
-            }
-            if (name === 'tvCategory') {
-              return {
-                name: 'MovieCategory',
-                value,
-              };
-            }
+    await retry(
+      async bail => this.fetch.request({
+        method: 'POST',
+        url: '/api/downloadclient',
+        data: {
+          ...client,
+          priority: undefined,
+          fields: client.fields.map(
+            ({ name, value }) => {
+              if (this.app !== 'radarr') {
+                return {
+                  name,
+                  value,
+                };
+              }
+              if (name === 'tvCategory') {
+                return {
+                  name: 'MovieCategory',
+                  value,
+                };
+              }
 
-            if (name === 'recentTvPriority') {
+              if (name === 'recentTvPriority') {
+                return {
+                  name: 'RecentMoviePriority',
+                  value,
+                };
+              }
+
+              if (name === 'olderTvPriority') {
+                return {
+                  name: 'OlderMoviePriority',
+                  value,
+                };
+              }
+
               return {
-                name: 'RecentMoviePriority',
+                name: name.charAt(0).toUpperCase() + name.slice(1),
                 value,
               };
-            }
-
-            if (name === 'olderTvPriority') {
-              return {
-                name: 'OlderMoviePriority',
-                value,
-              };
-            }
-
-            return {
-              name: name.charAt(0).toUpperCase() + name.slice(1),
-              value,
-            };
-          },
-        ),
+            },
+          ),
+        },
+      }).catch((err: AxiosError) => {
+        if (!err.response) {
+          bail(new Error('Cannot contact Sonarr/Radarr'));
+          return;
+        }
+        if (err.response.status !== 400) {
+          bail(new Error('Something went wrong adding the download client to Sonarr/Radarr'));
+        }
+      }),
+      {
+        retries: 10,
       },
-    }).catch((err: AxiosError) => {
-      console.log(err.response);
-      throw err;
-    });
+    );
   }
 
   async addMultiple(clients: Client[]) {
