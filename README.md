@@ -6,7 +6,7 @@ Holo is an app to effortlessly launch your favourite apps in Docker containers.
 - Easy-to-use web interface *(coming soon!)*
 - REST based API
 
-[![Build Status](https://travis-ci.org/getholo/dashboard.svg?branch=master)](https://travis-ci.org/getholo/dashboard)
+[![Build Status](https://travis-ci.com/getholo/dashboard.svg?branch=master)](https://travis-ci.com/getholo/dashboard)
 [![codecov](https://codecov.io/gh/getholo/dashboard/branch/master/graph/badge.svg)](https://codecov.io/gh/getholo/dashboard)
 [![Discord](https://img.shields.io/discord/480480210643451904?color=%2386E3CE&label=discord)](https://discord.gg/Su57NUH)
 
