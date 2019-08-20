@@ -7,5 +7,5 @@ services:
   - docker
 
 script:
-  - npm run ci
-  - npm run coverage
+  - yarn ci
+  - yarn coverage
