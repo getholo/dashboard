@@ -221,6 +221,74 @@ export class Nzbget {
   ];
 }
 
+interface SabnzbdProps extends Props {
+  urlBase?: string
+  apiKey: string
+  tvCategory?: string
+  recentTvPriority?: -100 | -2 | -1 | 0 | 1 | 2
+  olderTvPriority?: -100 | -2 | -1 | 0 | 1 | 2
+  useSsl?: boolean
+}
+
+export class Sabnzbd {
+  constructor(private props: SabnzbdProps) {
+    // props is private
+  }
+
+  public implementationName = 'SABnzbd' as 'SABnzbd';
+  public implementation = 'Sabnzbd' as 'Sabnzbd';
+  public configContract = 'SabnzbdSettings' as 'SabnzbdSettings';
+  public infoLink = 'https://github.com/Sonarr/Sonarr/wiki/Supported-DownloadClients#sabnzbd';
+
+  public enable = this.props.enable;
+  public protocol = 'usenet' as 'usenet';
+  public priority = this.props.priority || 1;
+  public name = this.props.name;
+
+  public fields = [
+    {
+      name: 'host',
+      value: this.props.host || 'localhost',
+    },
+    {
+      name: 'port',
+      value: this.props.port || 8080,
+    },
+    {
+      name: 'urlBase',
+      value: this.props.urlBase,
+    },
+    {
+      name: 'apiKey',
+      value: this.props.apiKey,
+    },
+    {
+      name: 'username',
+      value: undefined,
+    },
+    {
+      name: 'password',
+      value: undefined,
+    },
+    {
+      name: 'tvCategory',
+      value: this.props.tvCategory || '',
+    },
+    {
+      name: 'recentTvPriority',
+      value: this.props.recentTvPriority || 0,
+    },
+    {
+      name: 'olderTvPriority',
+      value: this.props.olderTvPriority || 0,
+    },
+    {
+      name: 'useSsl',
+      value: this.props.useSsl || false,
+    },
+  ];
+}
+
 type QBittorrent = {
   enable: boolean,
   protocol: 'torrent',
@@ -333,59 +401,6 @@ type RTorrent = {
   implementation: 'RTorrent',
   configContract: 'RTorrentSettings',
   infoLink: 'https://github.com/Sonarr/Sonarr/wiki/Supported-DownloadClients#rtorrent',
-}
-
-type Sabnzbd = {
-  enable: boolean,
-  protocol: 'usenet',
-  priority: number,
-  name: string,
-  fields: [
-    {
-      name: 'host',
-      value: string,
-    },
-    {
-      name: 'port',
-      value: 8080 | number,
-    },
-    {
-      name: 'urlBase',
-      value?: string,
-    },
-    {
-      name: 'apiKey',
-      value?: string,
-    },
-    {
-      name: 'username',
-      value?: string,
-    },
-    {
-      name: 'password',
-      value?: string,
-    },
-    {
-      name: 'tvCategory',
-      value: string,
-    },
-    {
-      name: 'recentTvPriority',
-      value: -100 | -2 | -1 | 0 | 1 | 2,
-    },
-    {
-      name: 'olderTvPriority',
-      value: -100 | -2 | -1 | 0 | 1 | 2,
-    },
-    {
-      name: 'useSsl',
-      value: boolean,
-    },
-  ],
-  implementationName: 'SABnzbd',
-  implementation: 'Sabnzbd',
-  configContract: 'SabnzbdSettings',
-  infoLink: 'https://github.com/Sonarr/Sonarr/wiki/Supported-DownloadClients#sabnzbd',
 }
 
 type UTorrent = {

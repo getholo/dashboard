@@ -3,11 +3,15 @@ import { waitUntilReachable } from '@dashboard/utils/isReachable';
 
 import retry from 'async-retry';
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import { Deluge, Nzbget, Transmission } from './downloadClients';
+
+import {
+  Deluge, Nzbget, Sabnzbd, Transmission,
+} from './downloadClients';
 
 type Client =
   | Deluge
   | Nzbget
+  | Sabnzbd
   | Transmission
 
 type withId<T extends Client> = T & { id: number }
@@ -152,6 +156,27 @@ export default class Nzbdrone {
               });
 
               return this.add(nzbget);
+            }
+
+            if (app.name === 'sabnzbd') {
+              const config = app.paths.find(path => path.dest === '/config');
+              const { apiKey } = await app.functions.getCredentials(config.src);
+              const { internalPort, url } = await app.inspect();
+              const sabnzbd = new Sabnzbd({
+                name: `holo-${app.id}`,
+                host: app.id,
+                enable: true,
+                port: internalPort,
+                apiKey,
+              });
+
+              if (!await app.functions.configReady(config.src)) {
+                await app.stop();
+                await app.start();
+                await waitUntilReachable(url);
+              }
+
+              return this.add(sabnzbd);
             }
           }
 

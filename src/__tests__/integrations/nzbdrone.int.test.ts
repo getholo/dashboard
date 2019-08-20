@@ -1,14 +1,17 @@
 import { cleanup, prepare } from '@dashboard/utils/testing';
 import nzbget from '@dashboard/apps/nzbget';
+import sabnzbd from '@dashboard/apps/sabnzbd';
 import radarr from '@dashboard/apps/radarr';
 import sonarr from '@dashboard/apps/sonarr';
 
 import Nzbdrone from '@dashboard/integrations/nzbdrone';
 import { waitUntilReachable } from '@dashboard/utils/isReachable';
 
+import nanoid from 'nanoid/generate';
+
 // 15 minutes
 jest.setTimeout(15 * 60 * 1000);
-process.env.integration = 'nzbdrone';
+process.env.integration = `nzbdrone-${nanoid('0123456789abcdefghijklmnopqrstuvwxyz', 20)}`;
 let path: string;
 
 type name = 'radarr' | 'sonarr'
@@ -109,6 +112,64 @@ describe('Integrations: Nzbdrone', () => {
 
     afterAll(async () => {
       await nzbget.remove(true, true);
+    });
+  });
+
+  describe('Sabnzbd', () => {
+    beforeAll(async () => {
+      await sabnzbd.create();
+    });
+
+    it('When installing Sabnzbd, we should see it pop up in Sonarr', async () => {
+      // Arrange
+      await sabnzbd.postInstall(sabnzbd);
+
+      // Act
+      const data = await apis.sonarr.list();
+
+      // Assert
+      expect(data.length).toEqual(1);
+      expect(data[0].implementation).toEqual('Sabnzbd');
+    });
+
+    it('When installing Sabnzbd, we should see it pop up in Radarr', async () => {
+      // Arrange
+      await sabnzbd.postInstall(sabnzbd);
+
+      // Act
+      const data = await apis.radarr.list();
+
+      // Assert
+      expect(data.length).toEqual(1);
+      expect(data[0].implementation).toEqual('Sabnzbd');
+    });
+
+    it('When installing Sonarr, we should see Sabnzbd pop up', async () => {
+      // Arrange
+      await sonarr.postInstall(sonarr);
+
+      // Act
+      const data = await apis.sonarr.list();
+
+      // Assert
+      expect(data.length).toEqual(1);
+      expect(data[0].implementation).toEqual('Sabnzbd');
+    });
+
+    it('When installing Radarr, we should see Sabnzbd pop up', async () => {
+      // Arrange
+      await radarr.postInstall(radarr);
+
+      // Act
+      const data = await apis.radarr.list();
+
+      // Assert
+      expect(data.length).toEqual(1);
+      expect(data[0].implementation).toEqual('Sabnzbd');
+    });
+
+    afterAll(async () => {
+      await sabnzbd.remove(true, true);
     });
   });
 });
