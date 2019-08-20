@@ -10,8 +10,6 @@ interface DockerContainer {
     Env: string[]
     Labels: {
       'holo.app': string
-      'traefik.port': string
-      'traefik.frontend.rule': string
       [key: string]: string
     }
   },
@@ -55,7 +53,7 @@ export default async function inspect<T extends string>(id: T): Promise<Containe
     return undefined;
   }
 
-  const internalPort = data.Config.Labels['traefik.port'];
+  const internalPort = data.Config.Labels[`traefik.http.services.${id}.loadbalancer.server.port`];
   let port: number;
 
   if (data.HostConfig && data.HostConfig.PortBindings) {
@@ -69,11 +67,11 @@ export default async function inspect<T extends string>(id: T): Promise<Containe
   }
 
   let url: string;
-  const host = data.Config.Labels['traefik.frontend.rule'];
+  const host = data.Config.Labels[`traefik.http.routers.${id}.rule`];
 
   if (host) {
     url = isProduction
-      ? `https://${host.replace('Host:', '')}`
+      ? `https://${host.replace('Host(`', '').replace('`)', '')}`
       : `http://localhost:${port}`;
   }
 

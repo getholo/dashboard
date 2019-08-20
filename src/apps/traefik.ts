@@ -5,7 +5,7 @@ const Traefik = new App({
   name: 'traefik',
   category: 'other',
   image: 'traefik:faisselle',
-  traefik: false,
+  traefik: 8080,
   ports: [
     {
       src: 80,
@@ -21,6 +21,18 @@ const Traefik = new App({
       src: Variables.global.appdata,
       dest: '/etc/traefik',
     },
+    {
+      src: '/var/run/docker.sock',
+      dest: '/var/run/docker.sock',
+      readOnly: true,
+    },
+  ],
+  commands: [
+    '--providers.docker=true',
+    '--providers.docker.exposedbydefault=false',
+    '--entryPoints.web.address=:80',
+    '--entryPoints.web-secure.address=:443',
+    '--api.dashboard=true',
   ],
 });
 

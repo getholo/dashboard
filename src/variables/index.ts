@@ -1,5 +1,6 @@
 class Globals {
   public readonly appdata = 'appdata' as string
+  public readonly downloads = 'downloads' as string
   public readonly media = 'media' as string
 }
 

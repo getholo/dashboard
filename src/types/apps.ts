@@ -32,39 +32,56 @@ export interface Container {
   url: string
 }
 
-export interface Traefik {
-  enabled: boolean
-  port?: number
-  frontend?: {
-    redirect?: {
-      entryPoint?: 'https'
+export interface Traefik2 {
+  enable: boolean
+  http?: {
+    routers?: {
+      [key: string]: {
+        rule?: string
+      }
     }
-    rule?: string
+    services?: {
+      [key: string]: {
+        loadbalancer?: {
+          server?: {
+            port?: number
+          }
+        }
+      }
+    }
   }
 }
 
-type TraefikOptions = number | false | Traefik;
+type TraefikOptions = number | false | Traefik2;
 
 const isTesting = process.env.NODE_ENV === 'test';
 
-function getTraefik(traefik: TraefikOptions, host?: string) {
+function getTraefik(traefik: TraefikOptions, app: string, domain: string) {
   if (typeof traefik === 'number') {
     return {
-      enabled: true,
-      port: traefik,
-      ...(
-        host && {
-          frontend: {
-            rule: `Host:${host}`,
+      enable: true,
+      http: {
+        routers: {
+          [app]: {
+            rule: `Host(\`${app}.${domain}\`)`,
           },
-        }
-      ),
-    } as Traefik;
+        },
+        services: {
+          [app]: {
+            loadbalancer: {
+              server: {
+                port: traefik,
+              },
+            },
+          },
+        },
+      },
+    } as Traefik2;
   }
   if (traefik === false) {
     return {
-      enabled: false,
-    } as Traefik;
+      enable: false,
+    } as Traefik2;
   }
 
   return traefik;
@@ -90,6 +107,7 @@ interface Config<
   name: appName
   image: string
   category: Cat;
+  commands?: string[]
   env?: {
     [key: string]: string
   }
@@ -173,13 +191,13 @@ export default class App<
     //   throw Error('DOMAIN_NOT_SETUP');
     // }
 
-    const domain = 'getholo.app';
+    const domain = 'dev.m-rots.com';
     // const config = this.config.preInstall
     //   ? await this.config.preInstall(this.config, await this.variables.getAll())
     //   : this.config;
     const { config } = this;
 
-    const traefik = getTraefik(config.traefik, `${this.id}.${domain}`);
+    const traefik = getTraefik(config.traefik, this.id, domain);
 
     const labels = {
       ...toLabels(traefik, 'traefik'),
@@ -198,15 +216,19 @@ export default class App<
       PUID: gid,
     });
 
+    const traefikPort = !traefik.enable
+      ? undefined
+      : traefik.http.services[this.id].loadbalancer.server.port;
+
     const withTraefikPort: Port[] = [
       {
-        src: traefik.port,
-        dest: traefik.port,
+        src: traefikPort,
+        dest: traefikPort,
       },
       ...config.ports || [],
     ];
 
-    const ports = toPorts(withTraefikPort, traefik.port);
+    const ports = toPorts(withTraefikPort, traefikPort);
 
     const paths = (this.paths).map(
       ({ src, dest, readOnly }) => `${src}:${dest}:${readOnly ? 'ro' : 'rw'}`,
@@ -220,6 +242,7 @@ export default class App<
     }
 
     await docker.containers.create(this.id, {
+      Cmd: config.commands,
       Env: env,
       Image: config.image,
       Labels: labels,
