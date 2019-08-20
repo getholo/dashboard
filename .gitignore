@@ -4,6 +4,5 @@ coverage
 
 prisma/dev.db
 
-node_modules/**
-yarn.lock
+node_modules
 yarn-error.log
