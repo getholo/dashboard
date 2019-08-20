@@ -11,7 +11,7 @@
     "generate": "prisma2 generate",
     "up": "prisma2 lift up",
     "test": "jest",
-    "ci": "jest --onlyChanged",
+    "ci": "jest",
     "coverage": "codecov"
   },
   "dependencies": {
