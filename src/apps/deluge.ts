@@ -15,12 +15,12 @@ const Deluge = new App({
   category: 'download-client',
   image: 'linuxserver/deluge:latest',
   traefik: 8112,
-  paths: [
-    {
+  paths: {
+    config: {
       src: Variables.global.appdata,
       dest: '/config',
     },
-  ],
+  },
 });
 
 export default Deluge;

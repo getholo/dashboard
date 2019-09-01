@@ -10,7 +10,7 @@ interface Port {
 const isTesting = process.env.NODE_ENV === 'test';
 const isProduction = process.env.NODE_ENV === 'production';
 
-export default (arr: Port[], traefikPort?: number) => arr.reduce(
+export default (arr: Port[], traefikPort?: number): PortMap => arr.reduce(
   (obj, port) => {
     if (!port.src || !port.dest) {
       return obj;

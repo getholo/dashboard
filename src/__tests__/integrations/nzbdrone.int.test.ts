@@ -34,7 +34,7 @@ beforeAll(async () => {
         const { url } = await app.inspect();
         await waitUntilReachable(url);
 
-        const config = app.paths.find(({ dest }) => dest === '/config').src;
+        const config = app.paths.config.src;
         const apikey = await app.functions.getApiKey(config);
         apis[app.name] = new Nzbdrone(url, apikey);
       },

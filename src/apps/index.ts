@@ -1,3 +1,4 @@
+import acmedns from './acmedns';
 import deluge from './deluge';
 import nzbget from './nzbget';
 import plex from './plex';
@@ -9,6 +10,7 @@ import traefik from './traefik';
 import transmission from './transmission';
 
 export default {
+  acmedns,
   deluge,
   nzbget,
   plex,

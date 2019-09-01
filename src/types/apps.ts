@@ -1,10 +1,12 @@
 import docker from '@dashboard/docker';
 import VariablesBackend from '@dashboard/variables/backend';
+import { globals } from '@dashboard/variables';
 
+import acme from '@dashboard/apps/acmedns';
 import nanoid from 'nanoid/generate';
 
 import {
-  toEnv, toLabels, toPorts, inspectApp,
+  toEnv, toLabels, toPorts, inspectApp, toExposedPorts,
 } from '@dashboard/utils';
 
 import { userInfo, homedir } from 'os';
@@ -37,7 +39,16 @@ export interface Traefik2 {
   http?: {
     routers?: {
       [key: string]: {
+        entrypoints?: string
+        middlewares?: string
         rule?: string
+        tls?: {
+          certresolver?: string
+          'domains[0]'?: {
+            main?: string,
+            sans?: string,
+          }
+        }
       }
     }
     services?: {
@@ -48,12 +59,21 @@ export interface Traefik2 {
           }
         }
       }
+    },
+    middlewares?: {
+      [key: string]: {
+        redirectscheme?: {
+          permanent?: boolean,
+          scheme?: 'https'
+        }
+      }
     }
   }
 }
 
 type TraefikOptions = number | false | Traefik2;
 
+const dashboard = join(homedir(), '.getholo', 'dashboard');
 const isTesting = process.env.NODE_ENV === 'test';
 
 function getTraefik(traefik: TraefikOptions, app: string, domain: string) {
@@ -61,8 +81,28 @@ function getTraefik(traefik: TraefikOptions, app: string, domain: string) {
     return {
       enable: true,
       http: {
+        middlewares: {
+          redirect: {
+            redirectscheme: {
+              permanent: true,
+              scheme: 'https',
+            },
+          },
+        },
         routers: {
           [app]: {
+            entrypoints: 'websecure',
+            rule: `Host(\`${app}.${domain}\`)`,
+            tls: {
+              certresolver: 'acmedns',
+              'domains[0]': {
+                main: `*.${domain}`,
+              },
+            },
+          },
+          [`${app}-redirect`]: {
+            entrypoints: 'web',
+            middlewares: 'redirect',
             rule: `Host(\`${app}.${domain}\`)`,
           },
         },
@@ -89,10 +129,12 @@ function getTraefik(traefik: TraefikOptions, app: string, domain: string) {
 
 type MaybePromise<Original> = Original | Promise<Original>
 
-interface Path<Dest extends string> {
-  src: string | 'appdata' | 'media'
-  dest: Dest
-  readOnly?: boolean
+type MultiPaths = {
+  [key: string]: {
+    src: string
+    dest: string
+    readOnly?: boolean
+  }
 }
 
 interface Config<
@@ -102,7 +144,7 @@ interface Config<
   Functions extends {
     [key: string]: <T>(arg: T) => MaybePromise<any>
   },
-  Dest extends string,
+  Paths extends MultiPaths,
 > {
   name: appName
   image: string
@@ -112,7 +154,7 @@ interface Config<
     [key: string]: string
   }
   traefik: TraefikOptions
-  paths?: Path<Dest>[]
+  paths?: Paths
   ports?: Port[]
 
   functions?: Functions
@@ -128,13 +170,15 @@ export default class App<
   Functions extends {
     [key: string]: (arg: any) => MaybePromise<any>
   },
-  Dest extends string,
+  Paths extends MultiPaths,
   > {
-  constructor(public config: Config<appName, Cat, Variables, Functions, Dest>) {
+  constructor(public config: Config<appName, Cat, Variables, Functions, Paths>) {
     // who the f needs a constructor anyways?
   }
 
   public functions = this.config.functions;
+
+  public preInstall: (app: this) => MaybePromise<Config<appName, Cat, Variables, Functions, Paths>>
   public postInstall: (app: this) => any
 
   public readonly id: appName | string = process.env.NODE_ENV === 'test'
@@ -145,18 +189,30 @@ export default class App<
   public name = this.config.name;
   public variables = new VariablesBackend(this.id, this.config.variables)
 
-  private appdataToPath() {
-    // removed linux platform as /opt/appdata requires extra permissions
-    return join(homedir(), '.getholo', 'dashboard', 'containers', this.id);
+  private containerPaths = {
+    appdata: join(dashboard, 'containers', this.id),
+    shared: join(dashboard, 'shared'),
   }
 
-  public paths: Path<Dest>[] = this.config.paths.map(
-    path => ({
-      dest: path.dest,
-      src: path.src === 'appdata' ? this.appdataToPath() : path.src,
-      readOnly: path.readOnly,
+  private resolvePath(path: string, dir: string): string {
+    if (path.startsWith(globals.appdata)) {
+      return join(this.containerPaths.appdata, dir);
+    }
+
+    return path;
+  }
+
+  public paths: Paths = Object.entries(this.config.paths).reduce(
+    (object, [key, path]) => ({
+      ...object,
+      [key]: {
+        src: this.resolvePath(path.src, key),
+        dest: path.dest,
+        readOnly: path.readOnly,
+      },
     }),
-  )
+    {} as Paths,
+  );
 
   async pullImage() {
     await docker.images.pull(this.config.image);
@@ -174,7 +230,7 @@ export default class App<
     await docker.containers.remove(this.id, force);
     if (deleteAppdata) {
       try {
-        await remove(this.appdataToPath());
+        await remove(this.containerPaths.appdata);
       } catch {
         // might crash on Travis
       }
@@ -186,16 +242,14 @@ export default class App<
   }
 
   async create() {
-    // const domain = await apps.traefik.variables.get('domain');
-    // if (!domain) {
-    //   throw Error('DOMAIN_NOT_SETUP');
-    // }
+    const domain = isTesting ? 'test.com' : await acme.variables.get('domain');
+    if (!domain) {
+      throw Error('DOMAIN_NOT_SETUP');
+    }
 
-    const domain = 'dev.m-rots.com';
-    // const config = this.config.preInstall
-    //   ? await this.config.preInstall(this.config, await this.variables.getAll())
-    //   : this.config;
-    const { config } = this;
+    const config = this.preInstall
+      ? await this.preInstall(this)
+      : this.config;
 
     const traefik = getTraefik(config.traefik, this.id, domain);
 
@@ -229,8 +283,9 @@ export default class App<
     ];
 
     const ports = toPorts(withTraefikPort, traefikPort);
+    const exposedPorts = toExposedPorts(ports);
 
-    const paths = (this.paths).map(
+    const paths = Object.values(this.paths).map(
       ({ src, dest, readOnly }) => `${src}:${dest}:${readOnly ? 'ro' : 'rw'}`,
     );
 
@@ -262,6 +317,7 @@ export default class App<
           },
         },
       },
+      ExposedPorts: exposedPorts,
     });
 
     await docker.containers.start(this.id);

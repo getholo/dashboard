@@ -18,13 +18,12 @@ const transmission = new App({
       protocol: 'udp',
     },
   ],
-  paths: [
-    {
+  paths: {
+    config: {
       src: Variables.global.appdata,
       dest: '/config',
-      readOnly: false,
     },
-  ],
+  },
 });
 
 export default transmission;

@@ -6,12 +6,12 @@ const plex = new App({
   category: 'media-server',
   image: 'plexinc/pms-docker:latest',
   traefik: 32400,
-  paths: [
-    {
+  paths: {
+    config: {
       src: Variables.global.appdata,
       dest: '/config',
     },
-  ],
+  },
 });
 
 export default plex;
