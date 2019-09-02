@@ -15,6 +15,21 @@ async function migrate() {
   migrated = true;
 }
 
+export async function getVariable(name: string, app: string) {
+  if (!migrated) await migrate();
+  try {
+    const index = `${app}-${name}`;
+    const { value: variable } = await photon.variables.findOne({
+      where: {
+        index,
+      },
+    });
+    return variable;
+  } catch {
+    return undefined;
+  }
+}
+
 export default class VariablesDataSource<
   appName extends string,
   Vars extends { [key: string]: string }
@@ -51,19 +66,8 @@ export default class VariablesDataSource<
   async get<Var extends string & keyof Vars>(
     name: Var, // name of the variable
   ) {
-    if (!migrated) await migrate();
     const { app } = this;
-    try {
-      const index = `${app}-${name}`;
-      const { value: variable } = await photon.variables.findOne({
-        where: {
-          index,
-        },
-      });
-      return variable;
-    } catch {
-      return undefined;
-    }
+    return getVariable(name, app);
   }
 
   async clear<Var extends string & keyof Vars>(

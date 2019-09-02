@@ -1,8 +1,7 @@
 import docker from '@dashboard/docker';
-import VariablesBackend from '@dashboard/variables/backend';
+import VariablesBackend, { getVariable } from '@dashboard/variables/backend';
 import { globals } from '@dashboard/variables';
 
-import acme from '@dashboard/apps/acmedns';
 import nanoid from 'nanoid/generate';
 
 import {
@@ -242,7 +241,7 @@ export default class App<
   }
 
   async create() {
-    const domain = isTesting ? 'test.com' : await acme.variables.get('domain');
+    const domain = isTesting ? 'test.com' : await getVariable('domain', 'acmedns');
     if (!domain) {
       throw Error('DOMAIN_NOT_SETUP');
     }
