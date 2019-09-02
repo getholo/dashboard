@@ -271,6 +271,7 @@ async function create(name: string, config: CreateProps): Promise<CreateResponse
     },
     data: config,
   });
+  console.log(data, config);
 
   return data;
 }
@@ -356,6 +357,8 @@ async function stop(id: string) {
   await docker.request({
     method: 'POST',
     url: `/containers/${id}/stop`,
+  }).catch((err: AxiosError) => {
+    console.log(err.response.data);
   });
 }
 

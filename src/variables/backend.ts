@@ -16,10 +16,7 @@ const photon = new Photon();
 let migrated = false;
 async function migrate() {
   await ensureFile(path);
-  console.log(await execa.command('ls -lsa /home/travis'));
-  console.log('Is the error happening here?');
   await execa.command('npm run up');
-  console.log('If I come in, then no!');
   migrated = true;
 }
 

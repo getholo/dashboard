@@ -8,6 +8,7 @@ import sabnzbd from './sabnzbd';
 import sonarr from './sonarr';
 import traefik from './traefik';
 import transmission from './transmission';
+import ouroboros from './ouroboros';
 
 export default {
   acmedns,
@@ -20,4 +21,5 @@ export default {
   sonarr,
   traefik,
   transmission,
+  ouroboros,
 };

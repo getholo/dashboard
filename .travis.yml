@@ -8,6 +8,14 @@ node_js:
 services:
   - docker
 
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install tree curl -y
+  - curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+  - sudo apt-get install nodejs -y
+
 script:
-  - yarn test
+  - sudo mkdir -p /home/travis/.getholo/dashboard/testing && sudo chown -hR travis:travis /home/travis/.getholo
+  - sudo yarn test
   - yarn coverage
+  - tree -pufid /home/travis/.getholo
