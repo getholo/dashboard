@@ -1,5 +1,7 @@
 dist: bionic
 language: node_js
+cache: yarn
+
 node_js:
  - "node"
 
@@ -7,5 +9,5 @@ services:
   - docker
 
 script:
-  - yarn ci
+  - yarn test
   - yarn coverage

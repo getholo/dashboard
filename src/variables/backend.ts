@@ -3,15 +3,23 @@ import { ensureFile } from 'fs-extra';
 import { join } from 'path';
 import { homedir } from 'os';
 import execa from 'execa';
+import nanoid from 'nanoid';
 
-const path = join(homedir(), '.getholo', 'dashboard', 'prod.db');
+const isTesting = process.env.NODE_ENV === 'test';
+const testruns = join(homedir(), '.getholo', 'dashboard', 'testing');
+
+const path = isTesting ? join(testruns, `${nanoid(24)}.db`) : join(homedir(), '.getholo', 'dashboard', 'prod.db');
+process.env.SQLITE_PATH = path;
 process.env.SQLITE_URL = `file:${path}`;
 const photon = new Photon();
 
 let migrated = false;
 async function migrate() {
   await ensureFile(path);
+  console.log(await execa.command('ls -lsa /home/travis'));
+  console.log('Is the error happening here?');
   await execa.command('npm run up');
+  console.log('If I come in, then no!');
   migrated = true;
 }
 

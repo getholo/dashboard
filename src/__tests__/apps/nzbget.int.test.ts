@@ -1,15 +1,9 @@
-import { cleanup, prepare } from '@dashboard/utils/testing';
+import { cleanup } from '@dashboard/utils/testing';
 import app from '@dashboard/apps/nzbget';
 
 // 15 minutes
 jest.setTimeout(15 * 60 * 1000);
-let path: string;
-
-beforeAll(async () => {
-  path = await prepare();
-});
-
-afterAll(async () => cleanup(path));
+afterAll(async () => cleanup());
 
 describe('Apps: Nzbget', () => {
   describe('Create App', () => {

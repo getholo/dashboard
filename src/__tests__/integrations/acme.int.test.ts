@@ -1,4 +1,4 @@
-import { cleanup, prepare } from '@dashboard/utils/testing';
+import { cleanup } from '@dashboard/utils/testing';
 import acme from '@dashboard/apps/acmedns';
 import traefik from '@dashboard/apps/traefik';
 
@@ -7,13 +7,8 @@ import nanoid from 'nanoid/generate';
 // 15 minutes
 jest.setTimeout(15 * 60 * 1000);
 process.env.integration = `acme-${nanoid('0123456789abcdefghijklmnopqrstuvwxyz', 20)}`;
-let path: string;
 
-beforeAll(async () => {
-  path = await prepare();
-});
-
-afterAll(async () => cleanup(path));
+afterAll(async () => cleanup());
 
 describe('Integrations: ACME', () => {
   it('When creating ACME-DNS, we should not get any errors', async () => {

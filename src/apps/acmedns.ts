@@ -47,7 +47,7 @@ const acmedns = new App({
   },
 });
 
-const generateConfig = (domain: string, email: string, subdomain?: string) => `
+const generateConfig = (domain: string, email: string) => `
 [general]
 listen = ":53"
 protocol = "both"
@@ -89,12 +89,12 @@ acmedns.preInstall = async () => {
     throw new Error('Missing Domain');
   }
 
-  const { domain, subdomain } = variables;
+  const { domain } = variables;
   const email = `admin.${domain}`;
 
   const path = join(acmedns.paths.config.src, 'config.cfg');
   await ensureFile(path);
-  await writeFile(path, generateConfig(domain, email, subdomain));
+  await writeFile(path, generateConfig(domain, email));
 
   return config;
 };

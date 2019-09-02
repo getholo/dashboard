@@ -1,4 +1,4 @@
-import { cleanup, prepare } from '@dashboard/utils/testing';
+import { cleanup } from '@dashboard/utils/testing';
 import nzbget from '@dashboard/apps/nzbget';
 import sabnzbd from '@dashboard/apps/sabnzbd';
 import radarr from '@dashboard/apps/radarr';
@@ -12,7 +12,6 @@ import nanoid from 'nanoid/generate';
 // 15 minutes
 jest.setTimeout(15 * 60 * 1000);
 process.env.integration = `nzbdrone-${nanoid('0123456789abcdefghijklmnopqrstuvwxyz', 20)}`;
-let path: string;
 
 type name = 'radarr' | 'sonarr'
 
@@ -21,8 +20,6 @@ const apis = {} as {
 };
 
 beforeAll(async () => {
-  path = await prepare();
-
   await Promise.all([
     radarr.create(),
     sonarr.create(),
@@ -48,7 +45,7 @@ afterAll(async () => {
     sonarr.remove(true, true),
   ]);
 
-  await cleanup(path);
+  await cleanup();
 });
 
 describe('Integrations: Nzbdrone', () => {
