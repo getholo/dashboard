@@ -271,7 +271,6 @@ async function create(name: string, config: CreateProps): Promise<CreateResponse
     },
     data: config,
   });
-  console.log(data, config);
 
   return data;
 }

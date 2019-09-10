@@ -10,7 +10,7 @@
     "postinstall": "SQLITE_URL='file:~/.getholo/dashboard/prod.db' npm run generate",
     "generate": "prisma2 generate",
     "up": "prisma2 lift up",
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "coverage": "codecov"
   },
   "dependencies": {
