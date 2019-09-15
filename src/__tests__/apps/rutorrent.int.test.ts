@@ -3,7 +3,10 @@ import app from '@dashboard/apps/rutorrent';
 
 // 15 minutes
 jest.setTimeout(15 * 60 * 1000);
-afterAll(async () => cleanup());
+afterAll(async (done) => {
+  await cleanup();
+  done();
+});
 
 describe('Apps: Rutorrent', () => {
   describe('Create App', () => {

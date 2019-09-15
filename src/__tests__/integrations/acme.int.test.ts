@@ -8,7 +8,10 @@ import nanoid from 'nanoid/generate';
 jest.setTimeout(15 * 60 * 1000);
 process.env.integration = `acme-${nanoid('0123456789abcdefghijklmnopqrstuvwxyz', 20)}`;
 
-afterAll(async () => cleanup());
+afterAll(async (done) => {
+  await cleanup();
+  done();
+});
 
 describe('Integrations: ACME', () => {
   it('When creating ACME-DNS, we should not get any errors', async () => {

@@ -291,7 +291,7 @@ export default class App<
     await docker.images.pull(config.image);
 
     const networks = await docker.networks.list();
-    if (!networks.find(network => network.Name === 'holo')) {
+    if (!networks.find((network) => network.Name === 'holo')) {
       await docker.networks.create('holo');
     }
 

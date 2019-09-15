@@ -11,7 +11,7 @@ const testruns = join(homedir(), '.getholo', 'dashboard', 'testing');
 const path = isTesting ? join(testruns, `${nanoid(24)}.db`) : join(homedir(), '.getholo', 'dashboard', 'prod.db');
 process.env.SQLITE_PATH = path;
 process.env.SQLITE_URL = `file:${path}`;
-const photon = new Photon();
+export const photon = new Photon();
 
 let migrated = false;
 async function migrate() {

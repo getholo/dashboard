@@ -3,7 +3,10 @@ import app from '@dashboard/apps/transmission';
 
 // 15 minutes
 jest.setTimeout(15 * 60 * 1000);
-afterAll(async () => cleanup());
+afterAll(async (done) => {
+  await cleanup();
+  done();
+});
 
 describe('Apps: Transmission', () => {
   describe('Create App', () => {

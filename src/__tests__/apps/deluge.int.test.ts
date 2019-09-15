@@ -3,7 +3,10 @@ import app from '@dashboard/apps/deluge';
 
 // 15 minutes
 jest.setTimeout(15 * 60 * 1000);
-afterAll(async () => cleanup());
+afterAll(async (done) => {
+  await cleanup();
+  done();
+});
 
 describe('Apps: Deluge', () => {
   describe('Create App', () => {

@@ -39,13 +39,14 @@ beforeAll(async () => {
   );
 });
 
-afterAll(async () => {
+afterAll(async (done) => {
   await Promise.all([
     radarr.remove(true, true),
     sonarr.remove(true, true),
   ]);
 
   await cleanup();
+  done();
 });
 
 describe('Integrations: Nzbdrone', () => {
