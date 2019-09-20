@@ -34,12 +34,12 @@ const rutorrent = new App({
       protocol: 'udp',
     },
   ],
-  paths: [
-    {
+  paths: {
+    config: {
       src: Variables.global.appdata,
       dest: '/config',
     },
-  ],
+  },
 });
 
 export default rutorrent;

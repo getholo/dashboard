@@ -1,6 +1,8 @@
 class Globals {
-  public readonly appdata = 'appdata' as string
-  public readonly media = 'media' as string
+  public readonly appdata = 'holo-globals-appdata' as string
+  public readonly downloads = 'holo-globals-appdata' as string
+  public readonly media = 'holo-globals-appdata' as string
+  public readonly shared = 'holo-globals-appdata' as string
 }
 
 class Variables {
@@ -9,4 +11,6 @@ class Variables {
   public readonly global = new Globals();
 }
 
-export default new Variables();
+export const globals = new Globals();
+export const variables = new Variables();
+export default variables;

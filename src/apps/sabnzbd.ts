@@ -33,12 +33,12 @@ const sabnzbd = new App({
       dest: 9889,
     },
   ],
-  paths: [
-    {
+  paths: {
+    config: {
       src: Variables.global.appdata,
       dest: '/config',
     },
-  ],
+  },
   functions: {
     configReady: async (appPath: string) => {
       const path = join(appPath, 'sabnzbd.ini');
@@ -69,8 +69,8 @@ sabnzbd.postInstall = async (app) => {
   const { url, internalPort } = await app.inspect();
   await waitUntilReachable(url);
 
-  const config = app.paths.find(path => path.dest === '/config');
-  const { apiKey } = await app.functions.getCredentials(config.src);
+  const config = app.paths.config.src;
+  const { apiKey } = await app.functions.getCredentials(config);
 
   const client = new Sabnzbd({
     name: `holo-${app.id}`,
@@ -80,7 +80,7 @@ sabnzbd.postInstall = async (app) => {
     apiKey,
   });
 
-  if (!await app.functions.configReady(config.src)) {
+  if (!await app.functions.configReady(config)) {
     await app.stop();
     await app.start();
     await waitUntilReachable(url);

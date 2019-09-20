@@ -15,12 +15,12 @@ const sonarr = new App({
   category: 'content-manager',
   image: 'linuxserver/sonarr:preview',
   traefik: 8989,
-  paths: [
-    {
+  paths: {
+    config: {
       src: Variables.global.appdata,
       dest: '/config',
     },
-  ],
+  },
   functions: {
     getApiKey: async (appPath: string) => {
       const path = join(appPath, 'config.xml');
@@ -37,8 +37,8 @@ sonarr.postInstall = async (app) => {
   const { url } = await app.inspect();
 
   await waitUntilReachable(url);
-  const config = app.paths.find(path => path.dest === '/config');
-  const apiKey = await app.functions.getApiKey(config.src);
+  const config = app.paths.config.src;
+  const apiKey = await app.functions.getApiKey(config);
   const api = new Nzbdrone(url, apiKey, 'sonarr');
 
   await api.removeExistingContainers();

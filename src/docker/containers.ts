@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const docker = axios.create({
   socketPath: '/var/run/docker.sock',
@@ -347,6 +347,8 @@ async function start(id: string) {
   await docker.request({
     method: 'POST',
     url: `/containers/${id}/start`,
+  }).catch((err: AxiosError) => {
+    console.log(err.response.data);
   });
 }
 
@@ -354,17 +356,23 @@ async function stop(id: string) {
   await docker.request({
     method: 'POST',
     url: `/containers/${id}/stop`,
+  }).catch((err: AxiosError) => {
+    console.log(err.response.data);
   });
 }
 
 async function remove(id: string, force?: boolean) {
-  await docker.request({
-    method: 'DELETE',
-    url: `/containers/${id}`,
-    params: {
-      force,
-    },
-  });
+  try {
+    await docker.request({
+      method: 'DELETE',
+      url: `/containers/${id}`,
+      params: {
+        force,
+      },
+    });
+  } catch {
+    console.log('container does not exist');
+  }
 }
 
 export default {

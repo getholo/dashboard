@@ -143,8 +143,8 @@ export default class Nzbdrone {
             const host = app.id;
 
             if (app.name === 'nzbget') {
-              const config = app.paths.find(path => path.dest === '/config');
-              const { username, password } = await app.functions.getCredentials(config.src);
+              const config = app.paths.config.src;
+              const { username, password } = await app.functions.getCredentials(config);
               const { internalPort } = await app.inspect();
               const nzbget = new Nzbget({
                 port: internalPort,
@@ -159,8 +159,8 @@ export default class Nzbdrone {
             }
 
             if (app.name === 'sabnzbd') {
-              const config = app.paths.find(path => path.dest === '/config');
-              const { apiKey } = await app.functions.getCredentials(config.src);
+              const config = app.paths.config.src;
+              const { apiKey } = await app.functions.getCredentials(config);
               const { internalPort, url } = await app.inspect();
               const sabnzbd = new Sabnzbd({
                 name: `holo-${app.id}`,
@@ -170,7 +170,7 @@ export default class Nzbdrone {
                 apiKey,
               });
 
-              if (!await app.functions.configReady(config.src)) {
+              if (!await app.functions.configReady(config)) {
                 await app.stop();
                 await app.start();
                 await waitUntilReachable(url);
@@ -198,7 +198,7 @@ export async function addClientToManagers(client: Client) {
           const { url } = await app.inspect();
           await waitUntilReachable(url);
 
-          const config = app.paths.find(path => path.dest === '/config').src;
+          const config = app.paths.config.src;
           const apikey = await app.functions.getApiKey(config);
 
           return new Nzbdrone(url, apikey, app.name).add(client);

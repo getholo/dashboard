@@ -14,12 +14,12 @@ const nzbget = new App({
   category: 'download-client',
   image: 'linuxserver/nzbget:latest',
   traefik: 6789,
-  paths: [
-    {
+  paths: {
+    config: {
       src: Variables.global.appdata,
       dest: '/config',
     },
-  ],
+  },
   functions: {
     getCredentials: async (appPath: string) => {
       const path = join(appPath, 'nzbget.conf');
@@ -42,8 +42,8 @@ nzbget.postInstall = async (app) => {
   const { url, internalPort } = await app.inspect();
   await waitUntilReachable(url);
 
-  const config = app.paths.find(path => path.dest === '/config');
-  const { username, password } = await app.functions.getCredentials(config.src);
+  const config = app.paths.config.src;
+  const { username, password } = await app.functions.getCredentials(config);
   const client = new Nzbget({
     name: `holo-${app.id}`,
     host: app.id,
